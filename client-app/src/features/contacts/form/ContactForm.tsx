@@ -8,6 +8,7 @@ interface IProps {
 	contact: IContact;
 	createContact: (contact: IContact) => void;
 	editContact: (contact: IContact) => void;
+	submitting: boolean;
 }
 
 export const ContactForm: React.FC<IProps> = ({
@@ -15,6 +16,7 @@ export const ContactForm: React.FC<IProps> = ({
 	contact: initialFormState,
 	createContact,
 	editContact,
+	submitting,
 }) => {
 	const initializeForm = () => {
 		if (initialFormState) {
@@ -79,6 +81,7 @@ export const ContactForm: React.FC<IProps> = ({
 					value={contact.phoneNumber}
 				/>
 				<Button
+					loading={submitting}
 					floated='right'
 					positive
 					type='submit'

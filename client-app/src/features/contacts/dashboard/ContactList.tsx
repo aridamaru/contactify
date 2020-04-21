@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { SyntheticEvent } from 'react';
 import { Item, Button, Label, Segment } from 'semantic-ui-react';
 import { IContact } from '../../../app/models/contact';
 
 interface IProps {
 	contacts: IContact[];
 	selectContact: (id: string) => void;
-	deleteContact: (id: string) => void;
+	deleteContact: (
+		event: SyntheticEvent<HTMLButtonElement>,
+		id: string
+	) => void;
+	submitting: boolean;
+	target: string;
 }
 
 export const ContactList: React.FC<IProps> = ({
 	contacts,
 	selectContact,
 	deleteContact,
+	submitting,
+	target,
 }) => {
 	return (
 		<Segment clearing>
@@ -34,7 +41,13 @@ export const ContactList: React.FC<IProps> = ({
 									color='blue'
 								/>
 								<Button
-									onClick={() => deleteContact(contact.id)}
+									name={contact.id}
+									loading={
+										target === contact.id && submitting
+									}
+									onClick={(e) =>
+										deleteContact(e, contact.id)
+									}
 									floated='right'
 									content='Delete'
 									color='red'

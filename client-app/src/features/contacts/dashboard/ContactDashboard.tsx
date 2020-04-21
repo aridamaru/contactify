@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { SyntheticEvent } from 'react';
 import { Grid } from 'semantic-ui-react';
 import { IContact } from '../../../app/models/contact';
 import { ContactList } from './ContactList';
@@ -14,7 +14,9 @@ interface IProps {
 	setSelectedContact: (contact: IContact | null) => void;
 	createContact: (contact: IContact) => void;
 	editContact: (contact: IContact) => void;
-	deleteContact: (id: string) => void;
+	deleteContact: (e: SyntheticEvent<HTMLButtonElement>, id: string) => void;
+	submitting: boolean;
+	target: string;
 }
 
 export const ContactDashboard: React.FC<IProps> = ({
@@ -27,6 +29,8 @@ export const ContactDashboard: React.FC<IProps> = ({
 	createContact,
 	editContact,
 	deleteContact,
+	submitting,
+	target,
 }) => {
 	return (
 		<Grid>
@@ -35,6 +39,8 @@ export const ContactDashboard: React.FC<IProps> = ({
 					contacts={contacts}
 					selectContact={selectContact}
 					deleteContact={deleteContact}
+					submitting={submitting}
+					target={target}
 				/>
 			</Grid.Column>
 			<Grid.Column width={6}>
@@ -52,6 +58,7 @@ export const ContactDashboard: React.FC<IProps> = ({
 						contact={selectedContact!}
 						createContact={createContact}
 						editContact={editContact}
+						submitting={submitting}
 					/>
 				)}
 			</Grid.Column>
