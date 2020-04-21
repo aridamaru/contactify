@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axios from 'axios';
 import { Container } from 'semantic-ui-react';
 import { IContact } from '../models/contact';
 import { NavBar } from '../../features/nav/NavBar';
 import { ContactDashboard } from '../../features/contacts/dashboard/ContactDashboard';
+import agent from '../api/agent';
 
 const App = () => {
 	const [contacts, setContacts] = useState<IContact[]>([]);
@@ -24,27 +24,34 @@ const App = () => {
 	};
 
 	const handleCreateContact = (contact: IContact) => {
-		setContacts([...contacts, contact]);
-		setSelectedContact(contact);
-		setEditMode(false);
+		agent.Contacts.create(contact).then(() => {
+			setContacts([...contacts, contact]);
+			setSelectedContact(contact);
+			setEditMode(false);
+		});
 	};
 
 	const handleEditContact = (contact: IContact) => {
-		setContacts([...contacts.filter((a) => a.id !== contact.id), contact]);
-		setSelectedContact(contact);
-		setEditMode(false);
+		agent.Contacts.update(contact).then(() => {
+			setContacts([
+				...contacts.filter((a) => a.id !== contact.id),
+				contact,
+			]);
+			setSelectedContact(contact);
+			setEditMode(false);
+		});
 	};
 
 	const handleDeleteContact = (id: string) => {
-		setContacts([...contacts.filter((a) => a.id !== id)]);
+		agent.Contacts.delete(id).then(() => {
+			setContacts([...contacts.filter((a) => a.id !== id)]);
+		});
 	};
 
 	useEffect(() => {
-		axios
-			.get<IContact[]>('http://localhost:5000/api/contacts')
-			.then((response) => {
-				setContacts(response.data);
-			});
+		agent.Contacts.list().then((response) => {
+			setContacts(response);
+		});
 	}, []);
 
 	return (
