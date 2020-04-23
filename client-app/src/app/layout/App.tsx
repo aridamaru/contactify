@@ -1,100 +1,28 @@
-import React, { useState, useEffect, Fragment, SyntheticEvent } from 'react';
+import React, { useEffect, Fragment, useContext } from 'react';
 import { Container } from 'semantic-ui-react';
-import { IContact } from '../models/contact';
 import { NavBar } from '../../features/nav/NavBar';
-import { ContactDashboard } from '../../features/contacts/dashboard/ContactDashboard';
-import agent from '../api/agent';
+import ContactDashboard from '../../features/contacts/dashboard/ContactDashboard';
 import { LoadingComponent } from './LoadingComponent';
+import ContactStore from '../stores/contactStore';
+import { observer } from 'mobx-react-lite';
 
 const App = () => {
-	const [contacts, setContacts] = useState<IContact[]>([]);
-
-	const [selectedContact, setSelectedContact] = useState<IContact | null>(
-		null
-	);
-
-	const [editMode, setEditMode] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [submitting, setSubmitting] = useState(false);
-	const [target, setTarget] = useState('');
-
-	const handleSelectContact = (id: string) => {
-		setSelectedContact(contacts.filter((a) => a.id === id)[0]);
-	};
-
-	const handleOpenCreateForm = () => {
-		setSelectedContact(null);
-		setEditMode(true);
-	};
-
-	const handleCreateContact = (contact: IContact) => {
-		setSubmitting(true);
-		agent.Contacts.create(contact)
-			.then(() => {
-				setContacts([...contacts, contact]);
-				setSelectedContact(contact);
-				setEditMode(false);
-			})
-			.then(() => setSubmitting(false));
-	};
-
-	const handleEditContact = (contact: IContact) => {
-		setSubmitting(true);
-		agent.Contacts.update(contact)
-			.then(() => {
-				setContacts([
-					...contacts.filter((a) => a.id !== contact.id),
-					contact,
-				]);
-				setSelectedContact(contact);
-				setEditMode(false);
-			})
-			.then(() => setSubmitting(false));
-	};
-
-	const handleDeleteContact = (
-		event: SyntheticEvent<HTMLButtonElement>,
-		id: string
-	) => {
-		setSubmitting(true);
-		setTarget(event.currentTarget.name);
-		agent.Contacts.delete(id)
-			.then(() => {
-				setContacts([...contacts.filter((a) => a.id !== id)]);
-			})
-			.then(() => setSubmitting(false));
-	};
+	const contactStore = useContext(ContactStore);
 
 	useEffect(() => {
-		agent.Contacts.list()
-			.then((response) => {
-				setContacts(response);
-			})
-			.then(() => setLoading(false));
-	}, []);
-
-	if (loading) return <LoadingComponent content='Loading contacts...' />;
+		contactStore.loadContacts();
+	}, [contactStore]);
+	if (contactStore.loadingInitial)
+		return <LoadingComponent content='Loading contacts...' />;
 
 	return (
 		<Fragment>
-			<NavBar openCreateForm={handleOpenCreateForm} />
+			<NavBar />
 			<Container style={{ marginTop: '7em' }}>
-				<ContactDashboard
-					contacts={contacts}
-					selectContact={handleSelectContact}
-					selectedContact={selectedContact}
-					editMode={editMode}
-					setEditMode={setEditMode}
-					setSelectedContact={setSelectedContact}
-					createContact={handleCreateContact}
-					editContact={handleEditContact}
-					deleteContact={handleDeleteContact}
-					submitting={submitting}
-					target={target}
-				/>
+				<ContactDashboard />
 			</Container>
 		</Fragment>
 	);
 };
 
-export default App;
+export default observer(App);

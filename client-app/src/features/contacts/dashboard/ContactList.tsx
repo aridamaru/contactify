@@ -1,29 +1,21 @@
-import React, { SyntheticEvent } from 'react';
+import React, { useContext } from 'react';
 import { Item, Button, Label, Segment } from 'semantic-ui-react';
-import { IContact } from '../../../app/models/contact';
+import { observer } from 'mobx-react-lite';
+import ContactStore from '../../../app/stores/contactStore';
 
-interface IProps {
-	contacts: IContact[];
-	selectContact: (id: string) => void;
-	deleteContact: (
-		event: SyntheticEvent<HTMLButtonElement>,
-		id: string
-	) => void;
-	submitting: boolean;
-	target: string;
-}
-
-export const ContactList: React.FC<IProps> = ({
-	contacts,
-	selectContact,
-	deleteContact,
-	submitting,
-	target,
-}) => {
+const ContactList: React.FC = () => {
+	const contactStore = useContext(ContactStore);
+	const {
+		contactsSorted,
+		selectContact,
+		deleteContact,
+		submitting = true,
+		target,
+	} = contactStore;
 	return (
 		<Segment clearing>
 			<Item.Group divided>
-				{contacts.map((contact) => (
+				{contactsSorted.map((contact) => (
 					<Item key={contact.id}>
 						<Item.Content>
 							<Item.Header as='a'>
@@ -61,3 +53,5 @@ export const ContactList: React.FC<IProps> = ({
 		</Segment>
 	);
 };
+
+export default observer(ContactList);

@@ -1,23 +1,22 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useContext } from 'react';
 import { Segment, Form, Button } from 'semantic-ui-react';
 import { IContact } from '../../../app/models/contact';
 import { v4 as uuid } from 'uuid';
+import ContactStore from '../../../app/stores/contactStore';
+import { observer } from 'mobx-react-lite';
 
 interface IProps {
-	setEditMode: (editMode: boolean) => void;
 	contact: IContact;
-	createContact: (contact: IContact) => void;
-	editContact: (contact: IContact) => void;
-	submitting: boolean;
 }
 
-export const ContactForm: React.FC<IProps> = ({
-	setEditMode,
-	contact: initialFormState,
-	createContact,
-	editContact,
-	submitting,
-}) => {
+const ContactForm: React.FC<IProps> = ({ contact: initialFormState }) => {
+	const contactStore = useContext(ContactStore);
+	const {
+		createContact,
+		editContact,
+		submitting,
+		cancelFormOpen,
+	} = contactStore;
 	const initializeForm = () => {
 		if (initialFormState) {
 			return initialFormState;
@@ -88,7 +87,7 @@ export const ContactForm: React.FC<IProps> = ({
 					content='Submit'
 				/>
 				<Button
-					onClick={() => setEditMode(false)}
+					onClick={cancelFormOpen}
 					floated='right'
 					type='button'
 					content='Cancel'
@@ -97,3 +96,4 @@ export const ContactForm: React.FC<IProps> = ({
 		</Segment>
 	);
 };
+export default observer(ContactForm);

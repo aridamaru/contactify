@@ -1,67 +1,30 @@
-import React, { SyntheticEvent } from 'react';
+import React, { useContext } from 'react';
 import { Grid } from 'semantic-ui-react';
-import { IContact } from '../../../app/models/contact';
-import { ContactList } from './ContactList';
-import { ContactDetails } from '../details/ContactDetails';
-import { ContactForm } from '../form/ContactForm';
+import ContactList from './ContactList';
+import ContactDetails from '../details/ContactDetails';
+import ContactForm from '../form/ContactForm';
+import { observer } from 'mobx-react-lite';
+import ContactStore from '../../../app/stores/contactStore';
 
-interface IProps {
-	contacts: IContact[];
-	selectContact: (id: string) => void;
-	selectedContact: IContact | null;
-	editMode: boolean;
-	setEditMode: (editMode: boolean) => void;
-	setSelectedContact: (contact: IContact | null) => void;
-	createContact: (contact: IContact) => void;
-	editContact: (contact: IContact) => void;
-	deleteContact: (e: SyntheticEvent<HTMLButtonElement>, id: string) => void;
-	submitting: boolean;
-	target: string;
-}
-
-export const ContactDashboard: React.FC<IProps> = ({
-	contacts,
-	selectContact,
-	selectedContact,
-	editMode,
-	setEditMode,
-	setSelectedContact,
-	createContact,
-	editContact,
-	deleteContact,
-	submitting,
-	target,
-}) => {
+export const ContactDashboard: React.FC = () => {
+	const contactStore = useContext(ContactStore);
+	const { editMode, selectedContact } = contactStore;
 	return (
 		<Grid>
 			<Grid.Column width={10}>
-				<ContactList
-					contacts={contacts}
-					selectContact={selectContact}
-					deleteContact={deleteContact}
-					submitting={submitting}
-					target={target}
-				/>
+				<ContactList />
 			</Grid.Column>
 			<Grid.Column width={6}>
-				{selectedContact && !editMode && (
-					<ContactDetails
-						contact={selectedContact}
-						setEditMode={setEditMode}
-						setSelectedContact={setSelectedContact}
-					/>
-				)}
+				{selectedContact && !editMode && <ContactDetails />}
 				{editMode && (
 					<ContactForm
 						key={(selectedContact && selectedContact.id) || 0}
-						setEditMode={setEditMode}
 						contact={selectedContact!}
-						createContact={createContact}
-						editContact={editContact}
-						submitting={submitting}
 					/>
 				)}
 			</Grid.Column>
 		</Grid>
 	);
 };
+
+export default observer(ContactDashboard);
