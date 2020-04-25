@@ -1,37 +1,53 @@
-import React, { useState, FormEvent, useContext } from 'react';
+import React, { useState, FormEvent, useContext, useEffect } from 'react';
 import { Segment, Form, Button } from 'semantic-ui-react';
 import { IContact } from '../../../app/models/contact';
 import { v4 as uuid } from 'uuid';
 import ContactStore from '../../../app/stores/contactStore';
 import { observer } from 'mobx-react-lite';
+import { RouteComponentProps } from 'react-router-dom';
 
-interface IProps {
-	contact: IContact;
+interface DetailParams {
+	id: string;
 }
 
-const ContactForm: React.FC<IProps> = ({ contact: initialFormState }) => {
+const ContactForm: React.FC<RouteComponentProps<DetailParams>> = ({
+	match,
+	history,
+}) => {
 	const contactStore = useContext(ContactStore);
 	const {
 		createContact,
 		editContact,
 		submitting,
-		cancelFormOpen,
+		contact: initialFormState,
+		loadContact,
+		clearContact,
 	} = contactStore;
-	const initializeForm = () => {
-		if (initialFormState) {
-			return initialFormState;
-		} else {
-			return {
-				id: '',
-				name: '',
-				lastName: '',
-				email: '',
-				phoneNumber: '',
-			};
-		}
-	};
 
-	const [contact, setContact] = useState<IContact>(initializeForm);
+	const [contact, setContact] = useState<IContact>({
+		id: '',
+		name: '',
+		lastName: '',
+		email: '',
+		phoneNumber: '',
+	});
+
+	useEffect(() => {
+		if (match.params.id && contact.id.length === 0) {
+			loadContact(match.params.id).then(
+				() => initialFormState && setContact(initialFormState)
+			);
+		}
+		return () => {
+			clearContact();
+		};
+	}, [
+		loadContact,
+		match.params.id,
+		clearContact,
+		initialFormState,
+		contact.id.length,
+	]);
 
 	const handleSubmit = () => {
 		if (contact.id.length === 0) {
@@ -39,9 +55,11 @@ const ContactForm: React.FC<IProps> = ({ contact: initialFormState }) => {
 				...contact,
 				id: uuid(),
 			};
-			createContact(newContact);
+			createContact(newContact).then(() =>
+				history.push(`/contacts/${newContact.id}`)
+			);
 		} else {
-			editContact(contact);
+			editContact(contact).then(() => history.push(`/contacts/${contact.id}`));
 		}
 	};
 	const handleInputChange = (
@@ -87,7 +105,7 @@ const ContactForm: React.FC<IProps> = ({ contact: initialFormState }) => {
 					content='Submit'
 				/>
 				<Button
-					onClick={cancelFormOpen}
+					onClick={() => history.push('/contacts')}
 					floated='right'
 					type='button'
 					content='Cancel'

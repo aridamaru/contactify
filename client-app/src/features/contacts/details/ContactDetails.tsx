@@ -1,16 +1,28 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Card, Image, Button } from 'semantic-ui-react';
 import ContactStore from '../../../app/stores/contactStore';
 import { observer } from 'mobx-react-lite';
+import { RouteComponentProps, Link } from 'react-router-dom';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
 
-export const ContactDetails: React.FC = () => {
+interface DetailParams {
+	id: string;
+}
+
+const ContactDetails: React.FC<RouteComponentProps<DetailParams>> = ({
+	match,
+	history,
+}) => {
 	const contactStore = useContext(ContactStore);
-	const {
-		selectedContact: contact,
-		openEditForm,
-		cancelFormOpen,
-		cancelSelectedContact,
-	} = contactStore;
+	const { contact, loadContact, loadingInitial } = contactStore;
+
+	useEffect(() => {
+		loadContact(match.params.id);
+	}, [loadContact, match.params.id]);
+
+	if (loadingInitial || !contact)
+		return <LoadingComponent content='Loading contact...' />;
+
 	return (
 		<Card fluid>
 			<Image src='/assets/placeholder.png' wrapped ui={false} />
@@ -26,14 +38,15 @@ export const ContactDetails: React.FC = () => {
 			<Card.Content extra>
 				<Button.Group widths={2}>
 					<Button
-						onClick={() => openEditForm(contact!.id)}
+						as={Link}
+						to={`/manage/${contact.id}`}
 						basic
 						color='teal'
 						content='Edit'
 					/>
 					>
 					<Button
-						onClick={cancelSelectedContact}
+						onClick={() => history.push('/contacts')}
 						basic
 						color='grey'
 						content='Cancel'

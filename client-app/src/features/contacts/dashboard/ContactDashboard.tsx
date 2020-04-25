@@ -1,27 +1,26 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Grid } from 'semantic-ui-react';
 import ContactList from './ContactList';
-import ContactDetails from '../details/ContactDetails';
-import ContactForm from '../form/ContactForm';
 import { observer } from 'mobx-react-lite';
 import ContactStore from '../../../app/stores/contactStore';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
 
 export const ContactDashboard: React.FC = () => {
 	const contactStore = useContext(ContactStore);
-	const { editMode, selectedContact } = contactStore;
+
+	useEffect(() => {
+		contactStore.loadContacts();
+	}, [contactStore]);
+
+	if (contactStore.loadingInitial)
+		return <LoadingComponent content='Loading contacts...' />;
 	return (
 		<Grid>
 			<Grid.Column width={10}>
 				<ContactList />
 			</Grid.Column>
 			<Grid.Column width={6}>
-				{selectedContact && !editMode && <ContactDetails />}
-				{editMode && (
-					<ContactForm
-						key={(selectedContact && selectedContact.id) || 0}
-						contact={selectedContact!}
-					/>
-				)}
+				<h2>Activity fitlers</h2>
 			</Grid.Column>
 		</Grid>
 	);

@@ -2,12 +2,12 @@ import React, { useContext } from 'react';
 import { Item, Button, Label, Segment } from 'semantic-ui-react';
 import { observer } from 'mobx-react-lite';
 import ContactStore from '../../../app/stores/contactStore';
+import { Link } from 'react-router-dom';
 
 const ContactList: React.FC = () => {
 	const contactStore = useContext(ContactStore);
 	const {
 		contactsSorted,
-		selectContact,
 		deleteContact,
 		submitting = true,
 		target,
@@ -27,19 +27,16 @@ const ContactList: React.FC = () => {
 							</Item.Description>
 							<Item.Extra>
 								<Button
-									onClick={() => selectContact(contact.id)}
+									as={Link}
+									to={`/contacts/${contact.id}`}
 									floated='right'
 									content='View'
 									color='blue'
 								/>
 								<Button
 									name={contact.id}
-									loading={
-										target === contact.id && submitting
-									}
-									onClick={(e) =>
-										deleteContact(e, contact.id)
-									}
+									loading={target === contact.id && submitting}
+									onClick={(e) => deleteContact(e, contact.id)}
 									floated='right'
 									content='Delete'
 									color='red'

@@ -1,14 +1,12 @@
-import { observable, action, computed } from 'mobx';
+import { observable, action, computed, runInAction } from 'mobx';
 import { createContext, SyntheticEvent } from 'react';
 import { IContact } from '../models/contact';
 import agent from '../api/agent';
 
 class ContactStore {
 	@observable contactRegistry = new Map();
-	@observable contacts: IContact[] = [];
-	@observable selectedContact: IContact | undefined;
+	@observable contact: IContact | null = null;
 	@observable loadingInitial = false;
-	@observable editMode = false;
 	@observable submitting = false;
 	@observable target = '';
 
@@ -29,13 +27,37 @@ class ContactStore {
 			this.loadingInitial = false;
 		}
 	};
-
+	@action loadContact = async (id: string) => {
+		let contact = this.getContact(id);
+		if (contact) {
+			this.contact = contact;
+		} else {
+			this.loadingInitial = true;
+			try {
+				contact = await agent.Contacts.details(id);
+				runInAction('getting contact', () => {
+					this.contact = contact;
+					this.loadingInitial = false;
+				});
+			} catch (error) {
+				runInAction('get contact error', () => {
+					this.loadingInitial = false;
+				});
+				console.log(error);
+			}
+		}
+	};
+	@action clearContact = () => {
+		this.contact = null;
+	};
+	getContact = (id: string) => {
+		return this.contactRegistry.get(id);
+	};
 	@action createContact = async (contact: IContact) => {
 		this.submitting = true;
 		try {
 			await agent.Contacts.create(contact);
 			this.contactRegistry.set(contact.id, contact);
-			this.editMode = false;
 			this.submitting = false;
 		} catch (error) {
 			console.log(error);
@@ -48,8 +70,7 @@ class ContactStore {
 		try {
 			await agent.Contacts.update(contact);
 			this.contactRegistry.set(contact.id, contact);
-			this.selectedContact = contact;
-			this.editMode = false;
+			this.contact = contact;
 			this.submitting = false;
 		} catch (error) {
 			this.submitting = false;
@@ -73,29 +94,6 @@ class ContactStore {
 			this.target = '';
 			console.log(error);
 		}
-	};
-
-	@action openCreateForm = () => {
-		this.editMode = true;
-		this.selectedContact = undefined;
-	};
-
-	@action openEditForm = (id: string) => {
-		this.selectedContact = this.contactRegistry.get(id);
-		this.editMode = true;
-	};
-
-	@action cancelSelectedContact = () => {
-		this.selectedContact = undefined;
-	};
-
-	@action cancelFormOpen = () => {
-		this.editMode = false;
-	};
-
-	@action selectContact = (id: string) => {
-		this.selectedContact = this.contactRegistry.get(id);
-		this.editMode = false;
 	};
 }
 

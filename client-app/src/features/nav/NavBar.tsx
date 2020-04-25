@@ -1,14 +1,13 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Menu, Container, Button } from 'semantic-ui-react';
-import ContactStore from '../../app/stores/contactStore';
 import { observer } from 'mobx-react-lite';
+import { NavLink } from 'react-router-dom';
 
 export const NavBar: React.FC = () => {
-	const contactStore = useContext(ContactStore);
 	return (
 		<Menu fixed='top' inverted>
 			<Container>
-				<Menu.Item>
+				<Menu.Item header as={NavLink} exact to='/'>
 					<img
 						src='/assets/logo.png'
 						alt='logo'
@@ -16,10 +15,11 @@ export const NavBar: React.FC = () => {
 					/>
 					Contactify
 				</Menu.Item>
-				<Menu.Item name='Contacts' />
+				<Menu.Item name='Contacts' as={NavLink} to='/contacts' />
 				<Menu.Item>
 					<Button
-						onClick={contactStore.openCreateForm}
+						as={NavLink}
+						to='/createContact'
 						positive
 						content='Create contact'
 					/>
@@ -28,5 +28,4 @@ export const NavBar: React.FC = () => {
 		</Menu>
 	);
 };
-
 export default observer(NavBar);
